@@ -1,5 +1,6 @@
 name: Semantic Release
 on:
+  #메인에서만 적용
   push:
     branches:
       - main
