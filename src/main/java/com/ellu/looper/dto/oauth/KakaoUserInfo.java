@@ -8,19 +8,19 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class KakaoUserInfo {
 
-    @JsonProperty("id")
-    private String id;
+  @JsonProperty("id")
+  private String id;
 
-    @JsonProperty("kakao_account")
-    private KakaoAccount kakaoAccount;
+  @JsonProperty("kakao_account")
+  private KakaoAccount kakaoAccount;
 
-    @Getter
-    @NoArgsConstructor
-    public static class KakaoAccount {
-        private String email;
-    }
+  @Getter
+  @NoArgsConstructor
+  public static class KakaoAccount {
+    private String email;
+  }
 
-    public String getEmail() {
-        return kakaoAccount.getEmail();
-    }
+  public String getEmail() {
+    return kakaoAccount.getEmail();
+  }
 }

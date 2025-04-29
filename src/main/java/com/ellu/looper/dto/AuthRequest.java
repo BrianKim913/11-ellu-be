@@ -4,6 +4,6 @@ import lombok.Getter;
 
 @Getter
 public class AuthRequest {
-    private String provider;
-    private String accessToken;
+  private String provider;
+  private String accessToken;
 }

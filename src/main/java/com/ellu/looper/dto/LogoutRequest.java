@@ -6,6 +6,5 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class LogoutRequest {
-    private String refreshToken;
+  private String refreshToken;
 }
-

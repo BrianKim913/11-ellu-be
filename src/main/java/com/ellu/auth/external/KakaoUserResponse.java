@@ -6,12 +6,12 @@ import lombok.Setter;
 @Getter
 @Setter
 public class KakaoUserResponse {
-    private Long id;
-    private KakaoAccount kakao_account;
+  private Long id;
+  private KakaoAccount kakao_account;
 
-    @Getter
-    @Setter
-    public static class KakaoAccount {
-        private String email;
-    }
+  @Getter
+  @Setter
+  public static class KakaoAccount {
+    private String email;
+  }
 }
