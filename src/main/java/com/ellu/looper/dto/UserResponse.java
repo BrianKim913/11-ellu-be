@@ -6,9 +6,8 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class UserResponse {
-    private Long id;
-    private String nickname;
-    private String createdAt;
-    private String imageUrl;
+  private Long id;
+  private String nickname;
+  private String createdAt;
+  private String imageUrl;
 }
-

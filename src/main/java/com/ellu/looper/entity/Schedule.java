@@ -1,4 +1,3 @@
 package com.ellu.looper.entity;
 
-public class Schedule {
-}
+public class Schedule {}
