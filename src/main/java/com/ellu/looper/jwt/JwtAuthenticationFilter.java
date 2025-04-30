@@ -3,6 +3,7 @@ package com.ellu.looper.jwt;
 import com.ellu.looper.exception.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -67,7 +68,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   private void handleTokenExpired(HttpServletRequest request, HttpServletResponse response)
       throws IOException {
-    String refreshToken = request.getHeader("Refresh-Token");
+    String refreshToken = null;
+
+    if (request.getCookies() != null) {
+      for (Cookie cookie : request.getCookies()) {
+        if ("refresh_token".equals(cookie.getName())) {
+          refreshToken = cookie.getValue();
+          break;
+        }
+      }
+    }
 
     if (refreshToken != null && jwtProvider.validateToken(refreshToken)) {
       Long userId = jwtProvider.extractUserId(refreshToken);
@@ -83,7 +93,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
       // 새 토큰을 응답 헤더에 담기
       response.setHeader("Authorization", "Bearer " + newAccessToken);
-      response.setHeader("Refresh-Token", newRefreshToken);
+      setRefreshTokenCookie(response, newRefreshToken);
 
       response.setStatus(HttpStatus.UNAUTHORIZED.value()); // 새 토큰을 받아 다시 요청해야 함
       response.getWriter().write("{ \"message\": \"Access token refreshed\" }");
@@ -92,5 +102,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       // Refresh Token도 만료
       throw new JwtException("Refresh token expired", HttpStatus.UNAUTHORIZED);
     }
+  }
+
+  private void setRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
+    Cookie refreshCookie = new Cookie("refresh_token", refreshToken);
+    refreshCookie.setHttpOnly(true);
+    refreshCookie.setSecure(true);
+    refreshCookie.setPath("/");
+    refreshCookie.setMaxAge(60 * 60 * 24 * 14);
+
+    response.addCookie(refreshCookie);
   }
 }

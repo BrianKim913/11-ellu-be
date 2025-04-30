@@ -3,6 +3,7 @@ package com.ellu.looper.service;
 import com.ellu.looper.dto.UserResponse;
 import com.ellu.looper.entity.User;
 import com.ellu.looper.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -25,6 +26,7 @@ public class UserService {
         );
   }
 
+  @Transactional
   public void updateNickname(Long userId, String newNickname) {
     User user =
         userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));

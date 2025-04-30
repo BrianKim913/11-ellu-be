@@ -2,6 +2,7 @@ package com.ellu.looper.entity;
 
 import com.ellu.looper.commons.enums.Color;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -34,4 +35,14 @@ public class Project {
 
   @Column(name = "deleted_at")
   private LocalDateTime deletedAt;
+
+  public void setTitle(@NotBlank(message = "Title must not be empty") String title) {
+
+  }
+
+  public void setUpdatedAt(LocalDateTime now) {
+  }
+
+  public void setDeletedAt(LocalDateTime now) {
+  }
 }

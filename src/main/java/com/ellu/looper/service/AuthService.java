@@ -9,6 +9,8 @@ import com.ellu.looper.jwt.JwtProvider;
 import com.ellu.looper.repository.RefreshTokenRepository;
 import com.ellu.looper.repository.UserRepository;
 import com.ellu.looper.service.oauth.KakaoOAuthService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -118,4 +120,15 @@ public class AuthService {
 
     return new AuthResponse(newAccessToken, newRefreshToken, false);
   }
+
+  public void setTokenCookies(HttpServletResponse response, String refreshToken) {
+    Cookie refreshCookie = new Cookie("refresh_token", refreshToken);
+    refreshCookie.setHttpOnly(true);
+    refreshCookie.setSecure(true);
+    refreshCookie.setPath("/");
+    refreshCookie.setMaxAge(60 * 60 * 24 * 14); // 2주
+
+    response.addCookie(refreshCookie);
+  }
+
 }
