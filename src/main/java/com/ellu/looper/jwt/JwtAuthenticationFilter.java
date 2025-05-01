@@ -20,7 +20,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   private final JwtProvider jwtProvider;
-  private final JwtService jwtService; // 토큰 저장소 (DB or Memory 등)
+  private final JwtService jwtService;
 
   public JwtAuthenticationFilter(JwtProvider jwtProvider, JwtService jwtService) {
     this.jwtProvider = jwtProvider;
@@ -49,8 +49,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         SecurityContextHolder.getContext().setAuthentication(authentication);
         log.info("JwtAuthenticationFilter 실행됨. 인증된 유저 ID: {}", userId);
-        log.info("Authorization Header: {}", authHeader);
-        log.info("토큰에서 추출된 사용자 ID: {}", userId);
 
       } catch (JwtException e) {
         if ("Token expired".equals(e.getMessage())) {
@@ -109,7 +107,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     refreshCookie.setHttpOnly(true);
     refreshCookie.setSecure(true);
     refreshCookie.setPath("/");
-    refreshCookie.setMaxAge(60 * 60 * 24 * 14);
+    refreshCookie.setMaxAge((int) JwtExpiration.REFRESH_TOKEN_EXPIRATION);
 
     response.addCookie(refreshCookie);
   }

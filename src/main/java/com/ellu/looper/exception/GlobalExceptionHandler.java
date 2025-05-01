@@ -21,6 +21,12 @@ public class GlobalExceptionHandler {
     return new ApiResponse<>("unauthorized or expired token", null);
   }
 
+  @ExceptionHandler(UserNotFoundException.class)
+  public ResponseEntity<ApiResponse<Void>> handleUserNotFound(UserNotFoundException ex) {
+    return ResponseEntity.status(HttpStatus.FORBIDDEN)
+        .body(new ApiResponse<>("user_not_found_or_unauthorized", null));
+  }
+
   @ExceptionHandler(RuntimeException.class)
   public ResponseEntity<?> handleRuntimeException(RuntimeException ex) {
     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -45,10 +51,17 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(IllegalArgumentException.class)
-  public ApiResponse<Map<String, String>> handleIllegalArgument(IllegalArgumentException ex) {
+  public ResponseEntity<ApiResponse<Map<String, String>>> handleIllegalArgument(IllegalArgumentException ex) {
     Map<String, String> error = Map.of("message", ex.getMessage());
-    return new ApiResponse<>("validation_failed", error);
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse<>("validation_failed", error));
   }
+
+  @ExceptionHandler(NicknameAlreadyExistsException.class)
+  public ResponseEntity<?> handleNicknameAlreadyExists(NicknameAlreadyExistsException ex) {
+    return ResponseEntity.status(HttpStatus.CONFLICT) // 409
+        .body(new ApiResponse("닉네임이 이미 존재합니다.", null));
+  }
+
 
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {

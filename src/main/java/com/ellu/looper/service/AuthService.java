@@ -4,6 +4,7 @@ import com.ellu.looper.dto.AuthResponse;
 import com.ellu.looper.dto.oauth.KakaoUserInfo;
 import com.ellu.looper.entity.RefreshToken;
 import com.ellu.looper.entity.User;
+import com.ellu.looper.exception.NicknameAlreadyExistsException;
 import com.ellu.looper.jwt.JwtExpiration;
 import com.ellu.looper.jwt.JwtProvider;
 import com.ellu.looper.repository.RefreshTokenRepository;
@@ -61,7 +62,11 @@ public class AuthService {
 
     refreshTokenRepository
         .findByUserId(user.getId())
-        .ifPresent(refreshTokenRepository::delete); // 기존 토큰 삭제 (있으면)
+        .ifPresent(existingToken -> {
+          log.info("Deleting existing token: {}", existingToken);
+          refreshTokenRepository.delete(existingToken);
+          refreshTokenRepository.flush();
+        });
 
     RefreshToken refreshTokenEntity =
         RefreshToken.builder()
@@ -84,7 +89,7 @@ public class AuthService {
     }
 
     if (userRepository.findByNickname(nickname).isPresent()) {
-      throw new RuntimeException("nickname_already_exists");
+      throw new NicknameAlreadyExistsException("nickname_already_exists");
     }
 
     User user =
@@ -126,7 +131,7 @@ public class AuthService {
     refreshCookie.setHttpOnly(true);
     refreshCookie.setSecure(true);
     refreshCookie.setPath("/");
-    refreshCookie.setMaxAge(60 * 60 * 24 * 14); // 2주
+    refreshCookie.setMaxAge((int) JwtExpiration.REFRESH_TOKEN_EXPIRATION); // 2주
 
     response.addCookie(refreshCookie);
   }

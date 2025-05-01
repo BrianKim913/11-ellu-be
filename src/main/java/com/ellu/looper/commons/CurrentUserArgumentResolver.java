@@ -10,7 +10,6 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
-@Slf4j
 @Component
 public class CurrentUserArgumentResolver implements HandlerMethodArgumentResolver {
 
@@ -30,7 +29,6 @@ public class CurrentUserArgumentResolver implements HandlerMethodArgumentResolve
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
     if (authentication instanceof JwtAuthenticationToken jwtAuthToken) {
-      log.info("CurrentUserArgumentResolver 호출됨");
 
       return jwtAuthToken.getPrincipal(); // userId
     }
