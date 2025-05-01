@@ -99,9 +99,8 @@ public class ProjectService {
     }
 
     @Transactional(readOnly = true)
-    public List<ProjectResponse> getProjects(User loginUser) {
-        List<ProjectMember> memberships = projectMemberRepository.findByUserAndDeletedAtIsNull(
-            loginUser);
+    public List<ProjectResponse> getProjects(Long userId) {
+        List<ProjectMember> memberships = projectMemberRepository.findByUserIdAndDeletedAtIsNull(userId);
 
         return memberships.stream()
             .map(ProjectMember::getProject)
@@ -127,11 +126,11 @@ public class ProjectService {
     }
 
     @Transactional(readOnly = true)
-    public ProjectResponse getProjectDetail(Long projectId, User loginUser) {
+    public ProjectResponse getProjectDetail(Long projectId, Long userId) {
         Project project = projectRepository.findByIdAndDeletedAtIsNull(projectId)
             .orElseThrow(() -> new IllegalArgumentException("Project not found"));
 
-        if (!project.getMember().getId().equals(loginUser.getId())) {
+        if (!project.getMember().getId().equals(userId)) {
             throw new SecurityException("Only project creator can view this project");
         }
 
@@ -152,11 +151,11 @@ public class ProjectService {
     }
 
     @Transactional
-    public void deleteProject(Long projectId, User loginUser) {
+    public void deleteProject(Long projectId, Long userId) {
         Project project = projectRepository.findByIdAndDeletedAtIsNull(projectId)
             .orElseThrow(() -> new IllegalArgumentException("Project not found"));
 
-        if (!project.getMember().getId().equals(loginUser.getId())) {
+        if (!project.getMember().getId().equals(userId)) {
             throw new SecurityException("Only project creator can delete this project");
         }
 
@@ -173,11 +172,11 @@ public class ProjectService {
     }
 
     @Transactional
-    public void updateProject(Long projectId, ProjectCreateRequest request, User loginUser) {
+    public void updateProject(Long projectId, ProjectCreateRequest request, Long userId) {
         Project project = projectRepository.findByIdAndDeletedAtIsNull(projectId)
             .orElseThrow(() -> new IllegalArgumentException("Project not found"));
 
-        if (!project.getMember().getId().equals(loginUser.getId())) {
+        if (!project.getMember().getId().equals(userId)) {
             throw new SecurityException("Only project creator can update this project");
         }
 
@@ -206,7 +205,7 @@ public class ProjectService {
         // Update members
         List<ProjectMember> existing = projectMemberRepository.findByProjectAndDeletedAtIsNull(project);
         List<ProjectMember> toRemove = existing.stream()
-            .filter(pm -> !pm.getUser().getId().equals(loginUser.getId()) && updatedUsers.stream().noneMatch(u -> u.getId().equals(pm.getUser().getId())))
+            .filter(pm -> !pm.getUser().getId().equals(userId) && updatedUsers.stream().noneMatch(u -> u.getId().equals(pm.getUser().getId())))
             .collect(Collectors.toList());
 
         toRemove.forEach(pm -> pm.setDeletedAt(LocalDateTime.now()));
