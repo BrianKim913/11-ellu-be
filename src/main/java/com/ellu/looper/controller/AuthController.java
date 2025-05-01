@@ -2,7 +2,6 @@ package com.ellu.looper.controller;
 
 import com.ellu.looper.commons.ApiResponse;
 import com.ellu.looper.commons.CurrentUser;
-import com.ellu.looper.dto.AuthRequest;
 import com.ellu.looper.dto.AuthResponse;
 import com.ellu.looper.dto.LogoutRequest;
 import com.ellu.looper.dto.NicknameRequest;
@@ -50,7 +49,7 @@ public class AuthController {
 
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-    headers.setAccept(List.of(MediaType.APPLICATION_JSON)); // 꼭 추가
+    headers.setAccept(List.of(MediaType.APPLICATION_JSON));
 
     MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
     params.add("grant_type", "authorization_code");
@@ -82,7 +81,7 @@ public class AuthController {
   }
 
   @PostMapping("/auth/token")
-  public ResponseEntity<?> kakaoLogin(@RequestBody Map<String, String> request, HttpServletResponse response) {
+  public ResponseEntity<ApiResponse<AuthResponse>> kakaoLogin(@RequestBody Map<String, String> request, HttpServletResponse response) {
     String code = request.get("code");
     if (code == null || code.isBlank()) {
       return ResponseEntity.badRequest().body(new ApiResponse("code가 필요합니다.", null));
@@ -97,7 +96,19 @@ public class AuthController {
     // RefreshToken을 쿠키로 설정
     authService.setTokenCookies(response, authResponse.getRefreshToken());
 
-    return ResponseEntity.ok(new ApiResponse("로그인 성공", null));
+    ResponseEntity<ApiResponse<AuthResponse>> responseEntity= ResponseEntity.ok(ApiResponse.success("로그인 성공", authResponse));
+
+    // ObjectMapper는 보통 Bean으로 등록되어 있으니 주입받거나 새로 생성할 수 있음
+    ObjectMapper objectMapper = new ObjectMapper();
+
+    try {
+      String json = objectMapper.writeValueAsString(responseEntity.getBody());
+      log.info("응답 내용: {}", json);
+    } catch (Exception e) {
+      log.error("응답 내용 로깅 중 오류 발생", e);
+    }
+
+    return responseEntity;
   }
 
 
