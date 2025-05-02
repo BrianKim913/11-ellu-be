@@ -4,11 +4,14 @@ import com.ellu.looper.dto.AuthResponse;
 import com.ellu.looper.dto.oauth.KakaoUserInfo;
 import com.ellu.looper.entity.RefreshToken;
 import com.ellu.looper.entity.User;
+import com.ellu.looper.exception.NicknameAlreadyExistsException;
 import com.ellu.looper.jwt.JwtExpiration;
 import com.ellu.looper.jwt.JwtProvider;
 import com.ellu.looper.repository.RefreshTokenRepository;
 import com.ellu.looper.repository.UserRepository;
 import com.ellu.looper.service.oauth.KakaoOAuthService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -59,7 +62,11 @@ public class AuthService {
 
     refreshTokenRepository
         .findByUserId(user.getId())
-        .ifPresent(refreshTokenRepository::delete); // 기존 토큰 삭제 (있으면)
+        .ifPresent(existingToken -> {
+          log.info("Deleting existing token: {}", existingToken);
+          refreshTokenRepository.delete(existingToken);
+          refreshTokenRepository.flush();
+        });
 
     RefreshToken refreshTokenEntity =
         RefreshToken.builder()
@@ -82,7 +89,7 @@ public class AuthService {
     }
 
     if (userRepository.findByNickname(nickname).isPresent()) {
-      throw new RuntimeException("nickname_already_exists");
+      throw new NicknameAlreadyExistsException("nickname_already_exists");
     }
 
     User user =
@@ -118,4 +125,15 @@ public class AuthService {
 
     return new AuthResponse(newAccessToken, newRefreshToken, false);
   }
+
+  public void setTokenCookies(HttpServletResponse response, String refreshToken) {
+    Cookie refreshCookie = new Cookie("refresh_token", refreshToken);
+    refreshCookie.setHttpOnly(true);
+    refreshCookie.setSecure(true);
+    refreshCookie.setPath("/");
+    refreshCookie.setMaxAge((int) JwtExpiration.REFRESH_TOKEN_EXPIRATION); // 2주
+
+    response.addCookie(refreshCookie);
+  }
+
 }
